@@ -20,8 +20,10 @@ import uuid
 from django.db import Error
 from cees.models import ShopAssistants, Tokens, Devices, Stores
 from ceesloggers import getDbLogger 
+import constants as c
 
 dblogger = getDbLogger()
+DB_ERRORS = { 0 : c.SUCC_QUERY, 1 : c.OBJECT_NOT_FOUND, 2 : c.DB_ERROR}
 
 """
 Authorization
@@ -39,8 +41,8 @@ def checkToken(tokenId):
     Tokens.objects.get(id = tokenId)
   except (Tokens.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
-    return 1 if type(dbe) == Tokens.DoesNotExist else 2
-  return 0
+    return DB_ERRORS[1] if type(dbe) == Tokens.DoesNotExist else DB_ERRORS[2]
+  return DB_ERRORS[0]
 
 """
 Functions related to login process.
@@ -61,7 +63,7 @@ def checkLoginCredentials(email, password, macAddress):
     token.save()
   except (ShopAssistants.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
-    return 0 if type(dbe) == ShopAssistants.DoesNotExist else 1
+    return DB_ERRORS[1] if type(dbe) == ShopAssistants.DoesNotExist else DB_ERRORS[2]
   return token.id
 
 def deleteToken(tokenId):
@@ -75,37 +77,52 @@ def deleteToken(tokenId):
     Tokens.objects.filter(id = tokenId).delete()
   except Error as dbe:
     dblogger.exception(dbe)
-    return 1
-  return 0
+    return DB_ERRORS[2]
+  return DB_ERRORS[0]
 
-def getStores(tokenId):
+def getStores(customer):
   """
-  This function returns the st
+  This function returns the stores linked to the given customer.
+  This function does not care about token, it is done before.
+  Returns the Stores in case of success, otherwise will return an error.
   """
   try:
-   sa = Tokens.objects.get(id = tokenId).sa
-   customer = ShopAssistants.objects.get(sa = sa).customer
-   return Stores.objects.get(customer = customer).city
-  except (Tokens.DoesNotExist, ShopAssistants.DoesNotExist, Error) as dbe:
-    dblogger.exception(dbe)
-    return 0 if type(dbe) == Tokens.DoesNotExist else 1 # If shop assistant is not found should be an internal error, since this function is called aferter login
+    storeList = Stores.objects.filter(customer = customer).values('city').distinct()
+    stores = {}
+    cities = []
+    for store in storeList:
+      cities.append(store.city)
+      stores[store.city] = store.address
+    stores['cities'] = cities
+    return stores
+  except (Stores.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe) 
+    return DB_ERRORS[1] if type(dbe) == Stores.DoesNotExist else DB_ERRORS[2]
+    
+     
 
-def getShopAssistantId(tokenId):
+def getShopAssistant(tokenId):
   """
-  This function returns the shop assistant linked to a given a token.
-  Returns -1 in case of error.
+  This function returns the shop assistant linked to the given token.
+  This function does not care about token, it is done before.
+  Returns the Shop Assistant ID in case of success, otherwise will return an error.
   """
   try:
-    return Tokens.objects.get(id = tokenId).saId
-  except (Tokens.DoesNotExist, Error) as dbe:
+    return Tokens.objects.get(id = tokenId).sa
+  except (Error) as dbe:
     dblogger.exception(dbe)
-    return -1 # 
+    return DB_ERRORS[2] 
 
-def getCustomerId(saId):
+def getCustomer(saId):
+  """
+  This function returns the customer linked to the given shop assistant.
+  This function does not care about if the shop assistant exists, it is done before.
+  Returns the Customer ID in case of success, otherwise will return an error.
+  """
   try:
-    return ShopAssistants.objects.get(id = saId).customer.id
-  except(ShopAssistants.DoesNotExists, Error) as dbe:
+    return ShopAssistants.objects.get(id = saId).customer
+  except(Error) as dbe:
     dblogger.exception(dbe)
-    return -1
+    return DB_ERRORS[2] 
 
 

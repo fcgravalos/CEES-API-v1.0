@@ -8,6 +8,7 @@ import json
 from jsonschema import validate, ValidationError
 from os import path
 from ceesloggers import getCeesAppLogger 
+import constants as c
 
 class CeesValidator:
   """
@@ -15,11 +16,12 @@ class CeesValidator:
   """
   def __init__(self):
 
-    self.LOGIN_SCHEMA = path.abspath('schemas/loginschema.json')
-    self.CHECKIN_SCHEMA = path.abspath('schemas/checkinschema.json')
-    self.DETECTION_SCHEMA = path.abspath('schemas/detectionschema.json')
-    self.CLIENT_INFO_SCHEMA = path.abspath('schemas/clientinfoschema.json')
-    self.SCHEMA_CODES = {'LOGIN' : self.LOGIN_SCHEMA, 'CHECKIN' : self.CHECKIN_SCHEMA, 'DETECTION' : self.DETECTION_SCHEMA, 'CLIENT_INFO' : self.CLIENT_INFO_SCHEMA}
+    self.LOGIN_SCHEMA = path.abspath(c.LOGIN_SCHEMA_PATH)
+    self.CHECKIN_SCHEMA = path.abspath(c.CHECKIN_SCHEMA_PATH)
+    self.DETECTION_SCHEMA = path.abspath(c.DETECTION_SCHEMA_PATH)
+    self.CLIENT_INFO_SCHEMA = path.abspath(c.CLIENT_INFO_SCHEMA_PATH)
+    self.SCHEMA_CODES = {c.LOGIN : self.LOGIN_SCHEMA, c.CHECKIN : self.CHECKIN_SCHEMA, c.DETECT : self.DETECTION_SCHEMA, c.CLIENT : self.CLIENT_INFO_SCHEMA}
+    self.VALIDATION_ERRORS = {0 : c.VALID_SUCC, 1 : c.IOERR, 2 : c.VALID_ERR}
     self.applogger = getCeesAppLogger()
 
   def validate(self, data, schemaCode):
@@ -37,5 +39,5 @@ class CeesValidator:
       validate(data, schema)
     except (IOError, ValidationError) as ve:
       self.applogger.exception(ve)     
-      return 1 if type(ve) == IOError else 2
-    return 0
+      return self.VALIDATION_ERORRS[1] if type(ve) == IOError else self.VALIDATION_ERRORS[2]
+    return self.VALIDATION_ERRORS[0]

@@ -261,6 +261,8 @@ class Stores(models.Model):
     email = models.CharField(unique=True, max_length=45, blank=True)
     customer = models.ForeignKey(Customers)
     status = models.CharField(max_length=8, blank=True)
+    def __unicode__(self): 
+        return self.city
     class Meta:
         managed = False
         db_table = 'stores'
