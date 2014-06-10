@@ -39,5 +39,5 @@ class CeesValidator:
       validate(data, schema)
     except (IOError, ValidationError) as ve:
       self.applogger.exception(ve)     
-      return self.VALIDATION_ERORRS[1] if type(ve) == IOError else self.VALIDATION_ERRORS[2]
+      return self.VALIDATION_ERRORS[1] if type(ve) == IOError else self.VALIDATION_ERRORS[2]
     return self.VALIDATION_ERRORS[0]
