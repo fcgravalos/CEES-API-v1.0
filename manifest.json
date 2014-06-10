@@ -1,0 +1,11 @@
+{
+  "name": "CEES - Customer Enhancement experience system",
+  "description": "CEES app",
+  "version": "0.1",
+  "app": {
+    "background": {
+      "scripts": ["background.js"]
+    }
+  },
+  "icons": { "16": "cees-16.png", "128": "cees-128.png" }
+}
