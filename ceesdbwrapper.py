@@ -87,13 +87,13 @@ def getStores(customer):
   Returns the Stores in case of success, otherwise will return an error.
   """
   try:
-    storeList = Stores.objects.filter(customer = customer).values('city').distinct()
+    storeList = Stores.objects.filter(customer = customer)
     stores = {}
     cities = []
     for store in storeList:
       cities.append(store.city)
       stores[store.city] = store.address
-    stores['cities'] = cities
+    stores['cities'] = set(cities)
     return stores
   except (Stores.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe) 
