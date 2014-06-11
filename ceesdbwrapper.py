@@ -17,10 +17,12 @@ sys_path.append(os_path.abspath(os_path.join(os_path.dirname(__file__), os_path.
 environ.setdefault("DJANGO_SETTINGS_MODULE", "cees.settings")
 ####################################################################
 import uuid
+import constants as c
+from datetime import datetime
 from django.db import Error
 from cees.models import ShopAssistants, Tokens, Devices, Stores
 from ceesloggers import getDbLogger 
-import constants as c
+
 
 dblogger = getDbLogger()
 DB_ERRORS = { 0 : c.SUCC_QUERY, 1 : c.OBJECT_NOT_FOUND, 2 : c.DB_ERROR}
@@ -59,7 +61,7 @@ def checkLoginCredentials(email, password, macAddress):
   try:
     shopAssistant = ShopAssistants.objects.get(email = email, password = password) # Checking shop assistant credentials.
     device = Devices.objects.get(mac_address = macAddress)                         # Checking device mac address.
-    token = Tokens(id = str(uuid.uuid4()), sa = shopAssistant, device = device)    # Creating a new token and saving it.
+    token = Tokens(id = str(uuid.uuid4()), creation_datetime = str(datetime.now()), sa = shopAssistant, device = device)    # Creating a new token and saving it.
     token.save()
   except (ShopAssistants.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
