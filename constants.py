@@ -1,3 +1,9 @@
+##########
+# SETTINGS
+##########
+DJANGO_SETTINGS = 'DJANGO_SETTINGS_MODULE'
+CEES_SETTINGS = 'cees.settings'
+
 ##############
 # HTTP HEADERS
 ##############

@@ -63,9 +63,9 @@ def checkLoginCredentials(email, password, macAddress):
     device = Devices.objects.get(mac_address = macAddress)                         # Checking device mac address.
     token = Tokens(id = str(uuid.uuid4()), creation_datetime = str(datetime.now()), sa = shopAssistant, device = device)    # Creating a new token and saving it.
     token.save()
-  except (ShopAssistants.DoesNotExist, Error) as dbe:
+  except (ShopAssistants.DoesNotExist, Devices.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
-    return DB_ERRORS[1] if type(dbe) == ShopAssistants.DoesNotExist else DB_ERRORS[2]
+    return DB_ERRORS[1] if type(dbe) == ShopAssistants.DoesNotExist or type(dbe) == Devices.DoesNotExist else DB_ERRORS[2]
   return token.id
 
 def deleteToken(tokenId):
