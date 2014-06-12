@@ -7,17 +7,16 @@ Date: 2014/06/05
 This script wraps queries to data model (CEES database).
 This keeps the view handling requests and responses.
 """
-
+import constants as c
 ###################################################################
 # set-up to run a model query from ceesdbwrapper. 
 ###################################################################
 from os import path as os_path, environ
 from sys import path as sys_path
 sys_path.append(os_path.abspath(os_path.join(os_path.dirname(__file__), os_path.pardir)))
-environ.setdefault("DJANGO_SETTINGS_MODULE", "cees.settings")
+environ.setdefault(c.DJANGO_SETTINGS, c.CEES_SETTINGS)
 ####################################################################
 import uuid
-import constants as c
 from datetime import datetime
 from django.db import Error
 from cees.models import ShopAssistants, Tokens, Devices, Stores
