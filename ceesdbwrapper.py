@@ -94,6 +94,7 @@ def getStores(customer):
     for store in storeList:
       cities.append(store.city)
       stores[store.city] = store.address
+    stores[c.CITIES] = cities
     return stores
   except (Stores.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe) 

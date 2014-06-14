@@ -55,5 +55,6 @@ MAC_ADDRESS = 'macAddress'
 ###################
 # CHECKIN DATA KEYS
 ###################
+CITIES = 'cities'
 CITY = 'city'
 ADDRESS = 'address'
