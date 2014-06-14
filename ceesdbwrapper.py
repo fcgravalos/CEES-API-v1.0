@@ -110,7 +110,7 @@ def checkIn(token, regId, store):
   If an error occurs will raise a DB_ERROR.
   """
   try:
-    CheckIns(token = token, registration = regId, store = store).save()
+    CheckIns(token = token, registration = regId, store = store, datetime = str(datetime.now())).save()
   except Error as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[2]
