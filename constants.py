@@ -1,3 +1,9 @@
+"""
+File: constants.py
+Author: Fernando Crespo Gravalos (cees.project.official@gmail.com)
+Date: 2014/06/10
+"""
+
 ##########
 # SETTINGS
 ##########
@@ -45,3 +51,9 @@ DB_ERROR = 'DATABASE_GENERAL_ERROR'
 EMAIL = 'email'
 PASSWORD = 'password'
 MAC_ADDRESS = 'macAddress'
+
+###################
+# CHECKIN DATA KEYS
+###################
+CITY = 'city'
+ADDRESS = 'address'
