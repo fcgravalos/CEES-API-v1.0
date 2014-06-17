@@ -7,8 +7,8 @@
 <link type="text/css" rel="stylesheet" href="css/css_CEES.css"  />
 
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script src="js/bootstrap.js"> </script>
-<script type="text/javascript" src="js/functions_CEES.js"> </script>
+<script src="bootstrap/js/bootstrap.js"> </script>
+
 
 <title>CEES</title>
 
@@ -21,7 +21,7 @@
 	</div>
 
 	<div id="forms" style="float:left; width:20%">
-		<p id="forms_p_welcome" style="font-size:12px; display:none"> Welcome to CEES Fernando... </p>
+		<p id="forms_p_welcome" style="font-size:12px; display:none"> Welcome to CEES... </p>
 		<br />
         
 	    <form id="forms_login" class="well span3" onsubmit="return false" style="display:block" >
@@ -31,7 +31,7 @@
 	        <input id="forms_login_input_password"type="text" class="form-control" placeholder="Type your password..." />
     	    <br />
         	<br />
-	        <button id="forms_login_btn_submit" type="submit" onclick="submit_login()" class="btn btn-primary"> Submit </button>
+	        <button id="forms_login_btn_submit" type="submit" class="btn btn-primary"> Submit </button>
 	        <button id="forms_login_btn_clear" type="submit"  class="btn"> Clear </button>
     	</form>
 
@@ -54,7 +54,7 @@
 	  		</select>
     	    <br />
 	        <br />
-    	    <button id="forms_stores_btn_submit" type="submit" onclick="submit_stores()" class="btn btn-primary"> Submit </button>
+    	    <button id="forms_stores_btn_submit" type="submit" class="btn btn-primary"> Submit </button>
          </form>
 
 	     <img id="forms_img_banner" class="well" src="img/Nespresso_small.png" style="display:none"/>
@@ -108,6 +108,6 @@
 	</div>
 
 
-
+<script type="text/javascript" src="js/functions_CEES_2.js"> </script>
 </body>
 </html>
