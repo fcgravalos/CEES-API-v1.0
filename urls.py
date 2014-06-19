@@ -1,6 +1,6 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
-from cees.views import LoginView, CheckinView
+from cees.views import LoginView, CheckinView, ArrivalView
 
 admin.autodiscover()
 
@@ -13,4 +13,5 @@ urlpatterns = patterns('',
     url(r'^docs/', include('rest_framework_swagger.urls')),
     url(r'^shopassistants/login/', LoginView.as_view(), name = 'login_view'),
     url(r'^shopassistants/checkin/', CheckinView.as_view(), name = 'checkin_view'),
+    url(r'^clients/arrivals/', ArrivalView.as_view(), name = 'arrival_view'),
 )
