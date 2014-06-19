@@ -15,6 +15,17 @@ CEES_SETTINGS = 'cees.settings'
 ##############
 AUTHENTICATION = 'HTTP_AUTHENTICATION'
 
+###################
+# HTTP STATUS CODES
+###################
+OK = 200
+CREATED = 201
+BAD_REQUEST = 400
+UNAUTHORIZED = 401
+FORBBIDEN = 403
+NOT_FOUND = 404
+INTERNAL_SERVER_ERROR = 500
+
 ########################
 # SCHEMAS RELATIVE PATHS
 ########################
@@ -58,3 +69,18 @@ MAC_ADDRESS = 'macAddress'
 CITIES = 'cities'
 CITY = 'city'
 ADDRESS = 'address'
+
+###################
+# ARRIVAL DATA KEYS
+###################
+AWAITING = 'AWAITING'
+CUSTOMERID = 'customerID'
+STOREID = 'storeID'
+RFID = 'rfid'
+
+####################################
+# GCM SETTINGS---move to settings.py
+####################################
+GCM_API_KEY = 'AIzaSyDuvrfGOwLsb2tgu-6oa2T06oPDAIHrUq8'
+EVENT = 'EVENT'
+REGISTRATIONID = 'registration'

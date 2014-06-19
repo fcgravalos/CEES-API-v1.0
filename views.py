@@ -3,14 +3,17 @@ File: views.py
 Author: Fernando Crespo Gravalos for CEES. (cees.project.official@gmail.com)
 Date: 2014/06/05
 """
-import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import ceesresponse as cr
 import ceesvalidator as cv
 import ceesdbwrapper as cdbw
-import constants as c 
+import constants as c
+import logmessages as lm
+import pushnotification as pn
+import requesthandler as rh
+from ceesloggers import getCeesAppLogger
 
 class LoginView(APIView):
   """
@@ -32,60 +35,41 @@ class LoginView(APIView):
     """
     Gets the available stores (city and address) for a given shop asistant.
     """
-    try:
-      tokenId = request.META[c.AUTHENTICATION]
-    except KeyError as re:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-
-    token = cdbw.getToken(tokenId)
-    if token == c.OBJECT_NOT_FOUND:
-      return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-    elif token == c.DB_ERROR:
+    (response, stores) = rh.getStores(request)
+    if response == c.UNAUTHORIZED:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED) 
+    elif response == c.INTERNAL_SERVER_ERROR:
       return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    sa = cdbw.getShopAssistant(tokenId)
-    if sa == c.DB_ERROR:
-      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    customer = cdbw.getCustomer(sa.id)
-    if customer == c.DB_ERROR:
-      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    stores = cdbw.getStores(customer.id)
-    if stores == c.OBJECT_NOT_FOUND:
-      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_404_INTERNAL_SERVER_ERROR)
-    elif stores == c.DB_ERROR:
-      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif response == c.NOT_FOUND:
+      return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
     return Response(cr.CeesResponse().getCeesResponse(0, 0, stores), status = status.HTTP_200_OK)
-        
+
+    
   def post(self, request):
     """
-    Login shop assistants. If email and password matches returns a token.
+    Login shop assistants. If email and password matches returns a token.   
     """
-    data = request.DATA # Parsing request. If it is malformed, Django will return HTTP 400 automatically.
-    validation_result = cv.CeesValidator().validate(data, c.LOGIN) # Validating request against schema.
-    if validation_result == c.VALID_SUCC: # Validation successful. Extracting data.
-      email = data.get(c.EMAIL, False)
-      password = data.get(c.PASSWORD, False)
-      macAddress = data.get(c.MAC_ADDRESS, False)
-      auth = cdbw.checkLoginCredentials(email, password, macAddress) # Checking credentials.
-      if auth == c.OBJECT_NOT_FOUND: # Credentials not found. Returns HTTP 401.
-        return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED) 
-      elif auth == c.DB_ERROR: # Could not persist token. Returns HTTP 500.
-        return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-      return Response(cr.CeesResponse().getCeesResponse(0, 0, auth), status = status.HTTP_201_CREATED) # Ok. Returns HTTP 201.
-    elif validation_result == c.IOERR: # IOError. Returns HTTP 500.
-      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # Validation Error. Returns HTTP 400.
+    response = rh.login(request)
+    (status_code, tokenId) = response 
+    if status_code == c.BAD_REQUEST: # Validation error.
+      return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # JSON format not valid or data parsing failed.
+    elif status_code == c.INTERNAL_SERVER_ERROR:
+      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR) # Internal Error.
+    elif status_code == c.UNAUTHORIZED:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED) # Credentials not found.
+    else:
+      return Response(cr.CeesResponse().getCeesResponse(0, 0, tokenId), status = status.HTTP_201_CREATED) # Token created.
 
   def delete(self, request):
     """
     Logout. This will delete token from database.
     """
-    try:
-      if cdbw.deleteToken(request.META[c.AUTHENTICATION]) == c.SUCC_QUERY: 
-        return Response(cr.CeesResponse().getCeesResponse(0, 0, ''), status = status.HTTP_200_OK) # Ok. Returns HTTP 200.
-      else:
-        return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR) # Database error. Returns HTTP 500.
-    except KeyError as re: # If no Authentication header found, returns HTTP 401.
+    response = rh.logout(request)
+    if response == c.UNAUTHORIZED:
       return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED)
+    elif response == c.INTERNAL_SERVER_ERROR:
+      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR) # Database error. Returns HTTP 500.
+    return Response(cr.CeesResponse().getCeesResponse(0, 0, ''), status = status.HTTP_200_OK) # Ok. Returns HTTP 200.
     
 class CheckinView(APIView):
   """
@@ -106,59 +90,85 @@ class CheckinView(APIView):
     """
     Checkin shop assistant. Checks the authentication header and the city and address provided in the payload.
     """
-    try:
-      tokenId = request.META[c.AUTHENTICATION]
-    except KeyError as re:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-    
-    token = cdbw.getToken(tokenId)
-    if token == c.OBJECT_NOT_FOUND:
+    response = rh.checkin(request)
+    if response == c.UNAUTHORIZED:
       return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-    elif token == c.DB_ERROR:
+    elif response == c.BAD_REQUEST:
+      return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST)
+    elif response == c.INTERNAL_SERVER_ERROR:
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    sa = cdbw.getShopAssistant(tokenId)
-    device = cdbw.getDevice(tokenId)
-    if sa == c.DB_ERROR or device == c.DB_ERROR: # If there is no shop assistant or device linked to the token it's a database error.
-      return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    regId = cdbw.getRegistrationId(device)
-    if regId == c.OBJECT_NOT_FOUND:
+    elif response == c.NOT_FOUND:
       return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_404_NOT_FOUND)
-    elif regId == c.DB_ERROR:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    data = request.DATA # Parsing request. If it is malformed, Django will return HTTP 400 automatically.
-    validationResult = cv.CeesValidator().validate(data, c.CHECKIN) # Validating request against schema.
-    if validationResult == c.VALID_SUCC: # Validation successful. Extracting data.
-      city = data.get(c.CITY)
-      address = data.get(c.ADDRESS)
-      store = cdbw.getStore(city, address)
-      if store == c.OBJECT_NOT_FOUND: # Very rare. This is checking that the store was deleted after the login but before the checkin.
-        return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_404_NOT_FOUND)
-      elif store == c.DB_ERROR:
-        return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-      else:
-        if cdbw.checkIn(token, regId, store) != c.SUCC_QUERY:
-          return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-        return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED) # Checkin persisted. HTTP 201.
-    return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # Validation Error. Returns HTTP 400.
-  
+    return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED) # Checkin persisted. HTTP 201.
+
 
   def delete(self, request):
     """
     This function will check out a shop assistant from a store.
     """
-    try:
-      tokenId = request.META[c.AUTHENTICATION]
-    except KeyError as re:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-    token = cdbw.getToken(tokenId)
-    if token == c.OBJECT_NOT_FOUND:
+    response = rh.checkout(request)
+    if response == c.UNAUTHORIZED:
       return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-    elif token == c.DB_ERROR:
+    elif response == c.INTERNAL_SERVER_ERROR:
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-    if cdbw.checkOut(token) == c.SUCC_QUERY:
-      return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_200_OK)
-    else:
+    return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_200_OK)
+
+class ArrivalView(APIView):
+  """docstring for ArrivalView"""
+  def post(self, request):
+    """
+    appLogger = getCeesAppLogger()
+    data = request.DATA # Parsing request. If it is malformed, Django will return HTTP 400 automatically.
+    validationResult = cv.CeesValidator().validate(data, c.DETECT) # Validating request against schema.
+    if validationResult == c.VALID_SUCC: # Validation successful. Extracting data.
+      customerId = data.get("customerID", False)
+      storeId = data.get("storeID", False)
+      rfid = data.get("rfid", False)
+      client = cdbw.getClientFromRFID(rfid)
+      if client == c.OBJECT_NOT_FOUND:
+        appLogger.warning(lm.RFID_NOT_FOUND)
+        return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
+      elif client == c.DB_ERROR:
+        appLogger.error(lm.DB_ERROR)
+        return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+      else:
+        if client.customer.id != customerId: # Client who enter in a store which is owned by a different customer.
+          appLogger.error(lm.CLIENT_NOT_ALLOWED)
+          return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_403_FORBIDDEN)
+        store = cdbw.getStoreFromId(storeId)
+        if store == c.OBJECT_NOT_FOUND:
+          appLogger.warning(lm.STORE_NOT_FOUND)
+          return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
+        elif store == c.DB_ERROR:
+          appLogger.error(lm.DB_ERROR)
+          return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        # Everything OK. Save arrival.
+        else:
+          if cdbw.saveArrival(client, store) == c.DB_ERROR:
+            appLogger.error(lm.DB_ERROR)
+            return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+          registrationIds = cdbw.getRegistrationIds(store)
+          if registrationIds != c.OBJECT_NOT_FOUND and registrationIds != c.DB_ERROR and registrationIds != []:
+            pn.sendNotification(registrationIds, client)
+          return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED)
+    return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # Validation Error. Returns HTTP 400.
+    """
+    response = rh.newArrival(request)
+    if response == c.BAD_REQUEST:
+      return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # Validation Error. Returns HTTP 400.
+    elif response == c.NOT_FOUND:
+      return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
+    elif response == c.FORBBIDEN:
+      return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_403_FORBIDDEN)
+    elif response == c.INTERNAL_SERVER_ERROR:
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED)
+
+
+
+
+
+
 
 
