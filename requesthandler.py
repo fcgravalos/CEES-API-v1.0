@@ -190,9 +190,9 @@ def newArrival(request):
       return c.INTERNAL_SERVER_ERROR
     registrationIds = cdbw.getRegistrationIds(store)
     if registrationIds != c.OBJECT_NOT_FOUND and registrationIds != c.DB_ERROR and registrationIds != []:
-      #applogger.info(lm.SEN)
+      applogger.info(lm.SENDING_NOTIFICATION)
       pn.sendNotification(registrationIds, client)
-      return c.CREATED
-    return c.BAD_REQUEST # Validation Error. Returns HTTP 400.
+    return c.CREATED
+  return c.BAD_REQUEST # Validation Error. Returns HTTP 400.
 
 

@@ -21,6 +21,7 @@ CREDENTIALS_NOT_FOUND = 'Could not find the email/password provided.'
 ## ARRIVALS ##
 RFID_NOT_FOUND = 'Invalid identifier. RFID not found in cees database.'
 CLIENT_NOT_ALLOWED = 'Client does not belong to this customer.'
+SENDING_NOTIFICATION = 'Sending push notification.'
 
 ## TOKEN ##
 MISSING_TOKEN = 'There is no Authentication header in request.'
