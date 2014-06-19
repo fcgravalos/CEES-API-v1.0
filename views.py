@@ -73,7 +73,7 @@ class LoginView(APIView):
     
 class CheckinView(APIView):
   """
-  This class encapsulate checkin process: checkin into a store and checkout.
+  This class encapsulates check-in process: check into a store and check-out.
   It handles checkin requests, validates it, processes it and responds.
 
   - To checkin send a POST request with content type JSON. Set the Authentication header with the token retrieved during the login. 
@@ -114,45 +114,15 @@ class CheckinView(APIView):
     return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_200_OK)
 
 class ArrivalView(APIView):
-  """docstring for ArrivalView"""
+  """
+  This class encapsulates the arrivals: incoming arrival, getting information about a client and so on.
+  - To set a new arrival, send a POST in the same way that the detection system does:
+
+    {"customerID" : your_customer_id, "storeID" : your_store_id, "rfid" : "rfid_card"}
+  """
   def post(self, request):
     """
-    appLogger = getCeesAppLogger()
-    data = request.DATA # Parsing request. If it is malformed, Django will return HTTP 400 automatically.
-    validationResult = cv.CeesValidator().validate(data, c.DETECT) # Validating request against schema.
-    if validationResult == c.VALID_SUCC: # Validation successful. Extracting data.
-      customerId = data.get("customerID", False)
-      storeId = data.get("storeID", False)
-      rfid = data.get("rfid", False)
-      client = cdbw.getClientFromRFID(rfid)
-      if client == c.OBJECT_NOT_FOUND:
-        appLogger.warning(lm.RFID_NOT_FOUND)
-        return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
-      elif client == c.DB_ERROR:
-        appLogger.error(lm.DB_ERROR)
-        return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-      else:
-        if client.customer.id != customerId: # Client who enter in a store which is owned by a different customer.
-          appLogger.error(lm.CLIENT_NOT_ALLOWED)
-          return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_403_FORBIDDEN)
-        store = cdbw.getStoreFromId(storeId)
-        if store == c.OBJECT_NOT_FOUND:
-          appLogger.warning(lm.STORE_NOT_FOUND)
-          return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
-        elif store == c.DB_ERROR:
-          appLogger.error(lm.DB_ERROR)
-          return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        # Everything OK. Save arrival.
-        else:
-          if cdbw.saveArrival(client, store) == c.DB_ERROR:
-            appLogger.error(lm.DB_ERROR)
-            return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-          registrationIds = cdbw.getRegistrationIds(store)
-          if registrationIds != c.OBJECT_NOT_FOUND and registrationIds != c.DB_ERROR and registrationIds != []:
-            pn.sendNotification(registrationIds, client)
-          return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED)
-    return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # Validation Error. Returns HTTP 400.
+    Store a new arrival with the incoming request from detection system.
     """
     response = rh.newArrival(request)
     if response == c.BAD_REQUEST:
