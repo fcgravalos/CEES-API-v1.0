@@ -97,19 +97,19 @@ def getStores(request):
   sa = cdbw.getShopAssistant(tokenId)
   if sa == c.DB_ERROR: 
     applogger(lm.DB_ERROR)
-    return Response(c.INTERNAL_SERVER_ERROR, '')
+    return (c.INTERNAL_SERVER_ERROR, '')
   customer = cdbw.getCustomer(sa.id)
   if customer == c.DB_ERROR: 
     applogger(lm.DB_ERROR)
-    return Response(c.INTERNAL_SERVER_ERROR, '')
+    return (c.INTERNAL_SERVER_ERROR, '')
   stores = cdbw.getStores(customer.id) # If no error, get the customer linked to a shop assistant.
   if stores == c.OBJECT_NOT_FOUND: 
     applogger.warning(lm.STORE_NOT_FOUND)
-    return Response(c.NOT_FOUND, '')
+    return (c.NOT_FOUND, '')
   elif stores == c.DB_ERROR:
     applogger.error(lm.DB_ERROR)
-    return Response(c.INTERNAL_SERVER_ERROR, '')
-  return Response(c.OK, stores) # If no error, return the store list linked to a customer.
+    return (c.INTERNAL_SERVER_ERROR, '')
+  return (c.OK, stores) # If no error, return the store list linked to a customer.
 
 def checkin(request):
   """
