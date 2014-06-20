@@ -7,13 +7,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import ceesresponse as cr
-import ceesvalidator as cv
-import ceesdbwrapper as cdbw
 import constants as c
-import logmessages as lm
-import pushnotification as pn
 import requesthandler as rh
-from ceesloggers import getCeesAppLogger
+
 
 class LoginView(APIView):
   """
