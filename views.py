@@ -24,7 +24,6 @@ class LoginView(APIView):
   
   - To logout send a DELETE request with an Authentication header containing the token retrieved in the login.
 
-  - To get the stores send a GET request with an Authentication header containing the token retrieved in the login.
   """
 
   def get(self, request):
@@ -72,6 +71,8 @@ class CheckinView(APIView):
   This class encapsulates check-in process: check into a store and check-out.
   It handles checkin requests, validates it, processes it and responds.
 
+  - To get the available stores send a GET request with an Authentication header containing the token retrieved in the login.
+
   - To checkin send a POST request with content type JSON. Set the Authentication header with the token retrieved during the login. 
     The payload should be:
   
@@ -81,7 +82,20 @@ class CheckinView(APIView):
   
   - To checkout send a DELETE request with an Authentication header containing the token retrieved during the login.
   """
-
+  
+  def get(self, request):
+    """
+    Gets the available stores (city and address) for a given shop assistant.
+    """
+    (response, stores) = rh.getStores(request)
+    if response == c.UNAUTHORIZED:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED) 
+    elif response == c.INTERNAL_SERVER_ERROR:
+      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif response == c.NOT_FOUND:
+      return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
+    return Response(cr.CeesResponse().getCeesResponse(0, 0, stores), status = status.HTTP_200_OK)
+  
   def post(self, request):  
     """
     Checkin shop assistant. Checks the authentication header and the city and address provided in the payload.
@@ -115,6 +129,7 @@ class ArrivalView(APIView):
   - To set a new arrival, send a POST in the same way that the detection system does:
 
     {"customerID" : your_customer_id, "storeID" : your_store_id, "rfid" : "rfid_card"}
+  
   """
   def post(self, request):
     """

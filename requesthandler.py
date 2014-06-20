@@ -37,9 +37,9 @@ def getToken(request):
     return (c.INTERNAL_SERVER_ERROR, '')
   return (c.OK, token)
 
-########################################################
-# Functions related to login: login, logout, getStores #
-########################################################
+#############################################
+# Functions related to login: login, logout #
+#############################################
 
 def login(request):
   """
@@ -66,6 +66,26 @@ def login(request):
   applogger.error(lm.VALIDATION_ERROR)
   return (c.BAD_REQUEST, '') # Validation Error. Returns HTTP 400.
 
+
+def logout(request):
+  """
+  Deletes the token from database causing the log-out.
+  """
+  try:
+    if cdbw.deleteToken(request.META[c.AUTHENTICATION]) == c.SUCC_QUERY: 
+      return c.OK # Ok. Returns HTTP 200.
+    else:
+      applogger.error(lm.DB_ERROR)
+      return c.INTERNAL_SERVER_ERROR # Database error. Returns HTTP 500.
+  except KeyError as re: # If no Authentication header found, returns HTTP 401.
+    applogger(lm.MISSING_TOKEN)
+    return c.UNAUTHORIZED
+
+
+#######################################################################
+# Functions related to check-in process: getStores, checkin, checkout #
+#######################################################################
+
 def getStores(request):
   """
   Given the token obtained during the login retrieves the sotores available for the linked shop assistant.
@@ -90,25 +110,6 @@ def getStores(request):
     applogger.error(lm.DB_ERROR)
     return Response(c.INTERNAL_SERVER_ERROR, '')
   return Response(c.OK, stores) # If no error, return the store list linked to a customer.
-
-def logout(request):
-  """
-  Deletes the token from database causing the log-out.
-  """
-  try:
-    if cdbw.deleteToken(request.META[c.AUTHENTICATION]) == c.SUCC_QUERY: 
-      return c.OK # Ok. Returns HTTP 200.
-    else:
-      applogger.error(lm.DB_ERROR)
-      return c.INTERNAL_SERVER_ERROR # Database error. Returns HTTP 500.
-  except KeyError as re: # If no Authentication header found, returns HTTP 401.
-    applogger(lm.MISSING_TOKEN)
-    return c.UNAUTHORIZED
-
-
-############################################################
-# Functions related to check-in process: checkin, checkout #
-############################################################
 
 def checkin(request):
   """
