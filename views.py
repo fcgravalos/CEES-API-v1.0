@@ -25,20 +25,6 @@ class LoginView(APIView):
   - To logout send a DELETE request with an Authentication header containing the token retrieved in the login.
 
   """
-
-  def get(self, request):
-    """
-    Gets the available stores (city and address) for a given shop asistant.
-    """
-    (response, stores) = rh.getStores(request)
-    if response == c.UNAUTHORIZED:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 2, ''), status = status.HTTP_401_UNAUTHORIZED) 
-    elif response == c.INTERNAL_SERVER_ERROR:
-      return Response(cr.CeesResponse().getCeesResponse(1, 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    elif response == c.NOT_FOUND:
-      return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
-    return Response(cr.CeesResponse().getCeesResponse(0, 0, stores), status = status.HTTP_200_OK)
-
     
   def post(self, request):
     """
