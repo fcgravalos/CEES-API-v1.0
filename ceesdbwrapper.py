@@ -88,13 +88,13 @@ def getStores(customer):
   Returns the Stores in case of success, otherwise will return an error (OBJECT_NOT_FOUND if the store was not found, DB_ERROR otherwise).
   """
   try:
-    storeList = Stores.objects.filter(customer = customer).distinct(c.CITY) # Only works in postgresql.
+    storeList = Stores.objects.get(customer = customer) 
     stores = {}
     cities = []
     for store in storeList:
       cities.append(store.city)
       stores[store.city] = store.address
-    stores[c.CITIES] = cities
+    stores[c.CITIES] = set(cities)
     return stores
   except (Stores.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe) 
