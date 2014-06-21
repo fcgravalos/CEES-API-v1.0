@@ -81,6 +81,10 @@ def deleteToken(tokenId):
     return DB_ERRORS[2]
   return DB_ERRORS[0]
 
+#########################################
+# Functions Related to checkin process. # 
+#########################################
+
 def getStores(customer):
   """
   This function returns the stores linked to the given customer.
@@ -88,21 +92,20 @@ def getStores(customer):
   Returns the Stores in case of success, otherwise will return an error (OBJECT_NOT_FOUND if the store was not found, DB_ERROR otherwise).
   """
   try:
-    storeList = Stores.objects.get(customer = customer) 
     stores = {}
     cities = []
+    storeList = Stores.objects.filter(customer = customer).values(c.CITY, c.ADDRESS)
     for store in storeList:
-      cities.append(store.city)
-      stores[store.city] = store.address
+      cities.append(store[c.CITY])
+      if store[c.CITY] in stores:
+        stores[store[c.CITY]].append(store[c.ADDRESS])
+      else:
+        stores[store[c.CITY]] = [store[c.ADDRESS]]
     stores[c.CITIES] = set(cities)
     return stores
   except (Stores.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe) 
     return DB_ERRORS[1] if type(dbe) == Stores.DoesNotExist else DB_ERRORS[2]
-
-#########################################
-# Functions Related to checkin process. # 
-#########################################
 
 def checkIn(token, regId, store):
   """
