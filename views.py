@@ -112,11 +112,26 @@ class CheckinView(APIView):
 class ArrivalView(APIView):
   """
   This class encapsulates the arrivals: incoming arrival, getting information about a client and so on.
-  - To set a new arrival, send a POST in the same way that the detection system does:
+  - To get the awaiting clients send a GET request with an Authentication header containing the token retrieved in the login.
+  - To set a new arrival send a POST in the same way that the detection system does:
 
     {"customerID" : your_customer_id, "storeID" : your_store_id, "rfid" : "rfid_card"}
   
   """
+
+  def get(self, request):
+    """
+    Get the list of awaiting clients.
+    """
+    (response, clients) = rh.getArrivalsInfo(request)
+    if response == c.UNAUTHORIZED:
+      return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
+    elif response == c.INTERNAL_SERVER_ERROR:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+    elif response == c.NOT_FOUND:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 4, ''), status = status.HTTP_404_NOT_FOUND)
+    return Response(cr.CeesResponse().getCeesResponse(0, 0, clients), status = status.HTTP_200_OK)
+
   def post(self, request):
     """
     Store a new arrival with the incoming request from detection system.
@@ -132,18 +147,7 @@ class ArrivalView(APIView):
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
     return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED)
 
-  def get(self, request):
-    """
-    Get the list of awaiting clients.
-    """
-    (response, clients) = rh.getArrivalsInfo(request)
-    if response == c.UNAUTHORIZED:
-      return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
-    elif response == c.INTERNAL_SERVER_ERROR:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    elif response == c.NOT_FOUND:
-      return Response(cr.CeesResponse().getCeesResponse(1 , 4, ''), status = status.HTTP_404_NOT_FOUND)
-    return Response(cr.CeesResponse().getCeesResponse(0, 0, clients), status = status.HTTP_200_OK)
+  
 
 
 
