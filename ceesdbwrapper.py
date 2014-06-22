@@ -21,7 +21,7 @@ from datetime import datetime
 from django.db import Error
 from cees.models import ShopAssistants, Tokens, Devices, Stores, SaRegistrations, CheckIns, Clients, Customers, RfidCards, ClientArrivals
 from ceesloggers import getDbLogger 
-
+from cees.serializers import ClientSerializer
 
 dblogger = getDbLogger()
 DB_ERRORS = { 0 : c.SUCC_QUERY, 1 : c.OBJECT_NOT_FOUND, 2 : c.DB_ERROR}
@@ -232,7 +232,7 @@ def saveArrival(client, store):
   Return SUCC_QUERY in case of success, DB_ERROR otherwise.
   """
   try:
-    ClientArrivals(client = client, store = store, status = c.AWAITING, datetime = str(datetime.now()), url = "https://localhost/clients/" + str(client.id) + "/" + str(client.id) + ".jpeg").save()
+    ClientArrivals(client = client, store = store, status = c.AWAITING, datetime = str(datetime.now()), url = "https://localhost" + str(client.id) + "/" + str(client.id) + ".jpeg").save()
     return DB_ERRORS[0]
   except Error as dbe:
     dblogger.exception(dbe)
@@ -250,3 +250,39 @@ def getRegistrationIds(store):
   except (CheckIns.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == CheckIns.DoesNotExist else DB_ERRORS[2]
+
+def getStoreFromCheckIn(token):
+  """
+  This function returns the store where the shop assistant requesting client info, has checked in.
+  """
+  try:
+    return CheckIns.objects.get(token = token).store
+  except (CheckIns.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[2]
+
+def getAwaitingClients(store):
+  """
+  This function will return a list o awating clients.
+  """
+  try:
+    clients = []
+    for client in ClientArrivals.objects.filter(store = store, status = c.AWAITING).values('client', 'url'):
+      client_as_json = ClientSerializer(Clients.objects.get(id = client['client'])).data
+      client_as_json['url'] = client['url']
+      clients.append(client_as_json)
+    return clients  
+  except (ClientArrivals.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[1] if type(dbe) == CheckIns.DoesNotExist else DB_ERRORS[2]
+
+def getClient(id):
+  """
+  Returns the client given its id. 
+  Returns an INTERNAL ERROR if the client is not found because this function is called from arrivals.
+  """
+  try:
+    return Clients.objects.get(id = id)
+  except (Clients.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe)
+  return DB_ERRORS[2]

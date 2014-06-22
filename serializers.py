@@ -1,17 +1,14 @@
+"""
+File: serializers.py
+Author: Fernando Crespo Gravalos (cees.project.official@gmail.com)
+Date: 2014/06/22 
+"""
+
 from rest_framework import serializers
-from cees.models import Tokens, Stores
+from cees.models import Clients
 
-class TokensSerializer(serializers.Serializer):
-
-  id = serializers.CharField()
-  sa = serializers.IntegerField()
-  device = serializers.IntegerField()
-
-class StoresSerializer(serializers.Serializer):
-	id = serializers.IntegerField()
-    city = serializers.CharField()
-    address = serializers.CharField()
-    telephone = serializers.CharField()
-    email = serializers.CharField()
-    customer = serializers.ForeignKey()
-    status = serializers.CharField()
+class ClientSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = Clients 
+    fields = ('name', 'surname', 'age', 'sex')
+    
