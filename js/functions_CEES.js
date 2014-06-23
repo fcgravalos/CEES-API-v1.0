@@ -1,3 +1,37 @@
+function getCookie(name) {
+	console.log(name);
+    var cookieValue = null;
+    if (document.cookie && document.cookie != '') {
+			console.log('pasa por el if');
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+
+        }
+    }
+});
+
 function hide_element(id){
  //se obtiene el id
 var el = document.getElementById(id); //se define la variable "el" igual a nuestro div
@@ -68,10 +102,59 @@ function checkout(){
 }
 
 
+//-------------------------------------------------------------
 
-document.getElementById('forms_login_btn_submit').addEventListener('click',login);// Adding handler to forms_login_btn_submit button
+$( document ).ready(function() {
+	$("#forms_login_btn_submit" ).click(function() {
+	
+	$( document ).ready(function() {
+    $.ajax({
+      url:"https://80.240.139.49/shopassistants/login/",
+      type:"POST",
+      contentType:"application/json; charset=utf-8",
+      data:
+	  {
+			"email":"sa.test@cees.com",
+		   	"password":"test1234",
+	   		"macAddress":"00:0C:29:18:6C:1A"
+	  },
+      dataType:"json"
+    });
+  });
+  });
+});
 
-//document.getElementById('forms_login_btn_clear').addEventListener('click',clear);// Adding handler to forms_login_btn_clear  button
+//----------------------------------------------------------
+//		$("#forms_login_btn_submit" ).click(function() {
+//		$("#forms").css("background-color","yellow");
+//		$.post("https://80.240.139.49/shopassistants/login/",
+//		$.ajax({
+//      		url:"http://urlapi/user/login",
+//		    type:"POST",
+//		    headers: { 
+//        		"Accept" : "application/json; charset=utf-8",
+//        		"Content-Type": "application/json; charset=utf-8"
+//	    },
+//      	data:{ username: "pippo", password: "secret123" },
+//      	dataType:"json"
+//	    })  
+//}); 
+//   		{
+//			"email":"sa.test@cees.com",
+//		   	"password":"test1234",
+//	   		"macAddress":"00:0C:29:18:6C:1A"
+//		},
+//	  	function(data, status, json) {
+//			 console.log('Data: ' + data + '\nStatus: ' + status);
+//		});
+//    });
+//
+//});
+
+
+//document.getElementById('forms_login_btn_submit').addEventListener('click',login);// Adding handler to forms_login_btn_submit button
+
+document.getElementById('forms_login_btn_clear').addEventListener('click',login);// Adding handler to forms_login_btn_clear  button
 
 document.getElementById('forms_stores_btn_submit').addEventListener('click',checkin);// Adding handler to forms_stores_btn_submit button
 
