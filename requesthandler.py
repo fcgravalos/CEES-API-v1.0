@@ -56,7 +56,7 @@ def login(request):
       applogger.warning(lm.CREDENTIALS_NOT_FOUND)
       return (c.UNAUTHORIZED, '')
     elif auth == c.DB_ERROR: # Could not persist token. Returns HTTP 500.
-      applogger(lm.DB_ERROR)
+      applogger.error(lm.DB_ERROR)
       return (c.INTERNAL_SERVER_ERROR, '')
     applogger.info(lm.LOGGED_IN + email)
     return (c.CREATED, auth) # Ok. Returns HTTP 201.
@@ -159,6 +159,26 @@ def checkout(request):
 # Function related to client arrivals: newArrival, getClientInfo #
 ##################################################################
 
+def getArrivalsInfo(request):
+  """
+  Returns the clients who are waiting to be attended by a shop assistant.
+  """
+  (status, token) = getToken(request) # Check the token in the Authentication header.
+  if status != c.OK:
+    return (status, '')
+  store = cdbw.getStoreFromCheckIn(token)
+  if store == c.DB_ERROR:
+    applogger(lm.DB_ERROR)
+    return (c.INTERNAL_SERVER_ERROR, '')
+  clients = cdbw.getAwaitingClients(store)
+  if clients == c.OBJECT_NOT_FOUND:
+    return (c.NOT_FOUND, '')
+  elif clients == c.DB_ERROR:
+    applogger(lm.DB_ERROR)
+    return (c.INTERNAL_SERVER_ERROR, '')
+  return (c.OK, clients)
+
+
 def newArrival(request):
   """
   Stores a new arrival and send notification to shop assistants who have checked-in the store linked to the given request.
@@ -196,21 +216,7 @@ def newArrival(request):
     return c.CREATED
   return c.BAD_REQUEST # Validation Error. Returns HTTP 400.
 
-def getArrivalsInfo(request):
-  """
-  Returns the clients who are waiting to be attended by a shop assistant.
-  """
-  (status, token) = getToken(request) # Check the token in the Authentication header.
-  if status != c.OK:
-    return (status, '')
-  store = cdbw.getStoreFromCheckIn(token)
-  if store == c.DB_ERROR:
-    applogger(lm.DB_ERROR)
-    return (c.INTERNAL_SERVER_ERROR, '')
-  clients = cdbw.getAwaitingClients(store)
-  if clients == c.OBJECT_NOT_FOUND:
-    return (c.NOT_FOUND, '')
-  elif clients == c.DB_ERROR:
-    applogger(lm.DB_ERROR)
-    return (c.INTERNAL_SERVER_ERROR, '')
-  return (c.OK, clients)
+##################################################################
+# Functions related to GCM: getProject, updateRegId, deleteRegId #
+##################################################################
+

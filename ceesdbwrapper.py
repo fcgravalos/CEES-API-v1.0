@@ -59,7 +59,7 @@ def checkLoginCredentials(email, password, macAddress):
   """
   try:
     shopAssistant = ShopAssistants.objects.get(email = email, password = password) # Checking shop assistant credentials.
-    device = Devices.objects.get(mac_address = macAddress)                         # Checking device mac address.
+    device = Devices.objects.get(mac_address = macAddress, customer = shopAssistant.customer) # Checking device mac address and customer.
     token = Tokens(id = str(uuid.uuid4()), creation_datetime = str(datetime.now()), sa = shopAssistant, device = device)    # Creating a new token and saving it.
     token.save()
   except (ShopAssistants.DoesNotExist, Devices.DoesNotExist, Error) as dbe:
@@ -286,3 +286,34 @@ def getClient(id):
   except (Clients.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
   return DB_ERRORS[2]
+
+############################
+# Functions related to GCM #
+############################
+
+def updateRegistrationId(reg_id, new_reg_id):
+  """
+  This function will replace registration id for a device when needed.
+  Returns SUCC_QUERY in case of a successful updating, 
+  OBJECT_NOT_FOUND if the registration was not found and DB_ERROR otherwise.
+  """
+  try:
+    sa_registration = SaRegistrations.filter(id = reg_id)
+    sa_registration.id = new_reg_id
+    sa_registration.save()
+    return DB_ERRORS[0]
+  except (SaRegistrations, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[1] if type(dbe) == SaRegistrations.DoesNotExist else DB_ERRORS[2]  
+  
+def deleteRegistrationId(reg_id):
+  """
+  This function will delete a non-valid registration id.
+  Returns SUCC_QUERY in case of a successful updating, 
+  OBJECT_NOT_FOUND if the registration was not found and DB_ERROR otherwise.
+  """
+  try:
+    SaRegistrations.filter(id = reg_id).delete()
+  except (SaRegistrations, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[1] if type(dbe) == SaRegistrations.DoesNotExist else DB_ERRORS[2]
