@@ -247,14 +247,14 @@ def updateRegId(request):
   device = cdbw.getDevice(token.id)
   if device == c.DB_ERROR:
     return c.INTERNAL_SERVER_ERROR
-  sa_reg = cdbw.getRegistrationId(device)
-  if sa_reg == c.OBJECT_NOT_FOUND:
+  registration = cdbw.getRegistrationId(device)
+  if registration == c.OBJECT_NOT_FOUND:
     return c.NOT_FOUND
-  elif sa_reg == c.INTERNAL_SERVER_ERROR:
+  elif registration == c.INTERNAL_SERVER_ERROR:
     return c.INTERNAL_SERVER_ERROR
   data = request.DATA
   regId = data.get('registrationID')
-  result = cdbw.updateRegistrationId(sa_reg.registration_id, regId)
+  result = cdbw.updateRegistrationId(registration.registration_id, regId)
   if result == c.OBJECT_NOT_FOUND:
     applogger.warning(lm.REGISTRATION_NOT_FOUND)
     return c.NOT_FOUND
