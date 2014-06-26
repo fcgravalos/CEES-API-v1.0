@@ -254,7 +254,7 @@ def updateRegId(request):
     return c.INTERNAL_SERVER_ERROR
   data = request.DATA
   regId = data.get('registrationID')
-  result = cdbw.updateRegistrationId(sa_reg.id, regId)
+  result = cdbw.updateRegistrationId(sa_reg.registration_id, regId)
   if result == c.OBJECT_NOT_FOUND:
     applogger.warning(lm.REGISTRATION_NOT_FOUND)
     return c.NOT_FOUND
