@@ -309,12 +309,10 @@ def updateRegistrationId(reg_id, new_reg_id):
   OBJECT_NOT_FOUND if the registration was not found and DB_ERROR otherwise.
   """
   try:
-    sa_re = SaRegistrations.objects.get(id = reg_id)
-    print "QUE SIII"
-    print sa_re.id
-    sa_re.id = new_reg_id
+    sa_re = SaRegistrations.objects.get(registration_id = reg_id)
+    sa_re.registration_id = new_reg_id
     sa_re.update_date = str(datetime.now())
-    sa_re.save(update_fields = ['update_date'])
+    sa_re.save(update_fields = ['registration_id', 'update_date'])
     return DB_ERRORS[0]
   except (SaRegistrations, Error) as dbe:
     dblogger.exception(dbe)
