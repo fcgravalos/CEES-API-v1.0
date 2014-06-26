@@ -245,7 +245,7 @@ def getRegistrationIds(store):
   try:
     regIds = []
     for r in (CheckIns.objects.filter(store = store).values(c.REGISTRATIONID)):
-      regIds.append(r[c.REGISTRATIONID])
+      regIds.append(SaRegistrations.objects.get(registration_id = r[c.REGISTRATIONID])
     return regIds
   except (CheckIns.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
