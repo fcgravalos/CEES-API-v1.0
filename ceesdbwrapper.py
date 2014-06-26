@@ -325,7 +325,7 @@ def deleteRegistrationId(reg_id):
   OBJECT_NOT_FOUND if the registration was not found and DB_ERROR otherwise.
   """
   try:
-    SaRegistrations.filter(id = reg_id).delete()
+    SaRegistrations.objects.filter(registration_id = reg_id).delete()
   except (SaRegistrations, Error) as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == SaRegistrations.DoesNotExist else DB_ERRORS[2]
