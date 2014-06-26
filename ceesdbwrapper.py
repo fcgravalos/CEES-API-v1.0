@@ -107,13 +107,13 @@ def getStores(customer):
     dblogger.exception(dbe) 
     return DB_ERRORS[1] if type(dbe) == Stores.DoesNotExist else DB_ERRORS[2]
 
-def checkIn(token, regId, store):
+def checkIn(token, registration, store):
   """
   This function will persist the checkin in the database.
   If an error occurs will raise a DB_ERROR.
   """
   try:
-    CheckIns(token = token, registration = regId, store = store, date_time = str(datetime.now())).save()
+    CheckIns(token = token, registration = registration, store = store, datetime = str(datetime.now())).save()
   except Error as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[2]
@@ -291,6 +291,17 @@ def getClient(id):
 # Functions related to GCM #
 ############################
 
+def saveRegistration(device, regId):
+  """
+  Links a registration id retrieved from Google
+  """
+  try:
+    SaRegistrations(id = regId, device = device, creation_date = str(datetime.now()), update_date = str(datetime.now())).save()
+    return DB_ERRORS[0]
+  except Error as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[2]
+
 def updateRegistrationId(reg_id, new_reg_id):
   """
   This function will replace registration id for a device when needed.
@@ -298,9 +309,12 @@ def updateRegistrationId(reg_id, new_reg_id):
   OBJECT_NOT_FOUND if the registration was not found and DB_ERROR otherwise.
   """
   try:
-    sa_registration = SaRegistrations.filter(id = reg_id)
-    sa_registration.id = new_reg_id
-    sa_registration.save()
+    sa_re = SaRegistrations.objects.get(id = reg_id)
+    print "QUE SIII"
+    print sa_re.id
+    sa_re.id = new_reg_id
+    sa_re.update_date = str(datetime.now())
+    sa_re.save(update_fields = ['update_date'])
     return DB_ERRORS[0]
   except (SaRegistrations, Error) as dbe:
     dblogger.exception(dbe)

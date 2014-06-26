@@ -123,10 +123,10 @@ def checkin(request):
   device = cdbw.getDevice(tokenId)
   if sa == c.DB_ERROR or device == c.DB_ERROR: # If there is no shop assistant or device linked to the token it's a database error.
     return c.INTERNAL_SERVER_ERROR
-  regId = cdbw.getRegistrationId(device)
-  if regId == c.OBJECT_NOT_FOUND:
+  registration = cdbw.getRegistrationId(device)
+  if registration == c.OBJECT_NOT_FOUND:
     return c.NOT_FOUND
-  elif regId == c.DB_ERROR:
+  elif registration == c.DB_ERROR:
     return c.INTERNAL_SERVER_ERROR
   data = request.DATA # Parsing request. If it is malformed, Django will return HTTP 400 automatically.
   validationResult = cv.CeesValidator().validate(data, c.CHECKIN) # Validating request against schema.
@@ -139,7 +139,7 @@ def checkin(request):
     elif store == c.DB_ERROR:
       return c.INTERNAL_SERVER_ERROR
     else:
-      if cdbw.checkIn(token, regId, store) != c.SUCC_QUERY:
+      if cdbw.checkIn(token, registration, store) != c.SUCC_QUERY:
         return c.INTERNAL_SERVER_ERROR
       return c.CREATED # Checkin persisted. HTTP 201.
   return c.BAD_REQUEST # Validation Error. Returns HTTP 400.
@@ -219,4 +219,47 @@ def newArrival(request):
 ##################################################################
 # Functions related to GCM: getProject, updateRegId, deleteRegId #
 ##################################################################
+
+def saveRegId(request):
+  """
+  Creates a new registration entry in cees database.
+  """
+  (status, token) = getToken(request) # Check the token in the Authentication header.
+  if status != c.OK:
+    return status
+  device = cdbw.getDevice(token.id)
+  if device == c.DB_ERROR:
+    return c.INTERNAL_SERVER_ERROR
+  data = request.DATA
+  regId = data.get('registrationID')
+  response = cdbw.saveRegistration(device, regId)
+  if response == c.DB_ERROR:
+    return c.INTERNAL_SERVER_ERROR
+  return c.OK
+
+def updateRegId(request):
+  """
+  Updates the registration Id linked to a device.
+  """
+  (status, token) = getToken(request) # Check the token in the Authentication header.
+  if status != c.OK:
+    return status
+  device = cdbw.getDevice(token.id)
+  if device == c.DB_ERROR:
+    return c.INTERNAL_SERVER_ERROR
+  sa_reg = cdbw.getRegistrationId(device)
+  if sa_reg == c.OBJECT_NOT_FOUND:
+    return c.NOT_FOUND
+  elif sa_reg == c.INTERNAL_SERVER_ERROR:
+    return c.INTERNAL_SERVER_ERROR
+  data = request.DATA
+  regId = data.get('registrationID')
+  result = cdbw.updateRegistrationId(sa_reg.id, regId)
+  if result == c.OBJECT_NOT_FOUND:
+    applogger.warning(lm.REGISTRATION_NOT_FOUND)
+    return c.NOT_FOUND
+  elif result == c.DB_ERROR:
+    applogger.error(lm.DB_ERROR)
+    return c.INTERNAL_SERVER_ERROR
+  return c.OK
 

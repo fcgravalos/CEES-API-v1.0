@@ -25,3 +25,6 @@ SENDING_NOTIFICATION = 'Sending push notification.'
 
 ## TOKEN ##
 MISSING_TOKEN = 'There is no Authentication header in request.'
+
+## GCM ##
+REGISTRATION_NOT_FOUND = 'Registration not found in database.'
