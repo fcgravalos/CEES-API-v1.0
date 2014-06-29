@@ -1,7 +1,7 @@
 """
 File: ceesresponse.py
 Author: Fernando Crespo Gravalos (cees.project.official@gmail.com)
-Date: 24/06/04
+Date: 2014/06/04
 """
 from datetime import datetime
 
@@ -17,7 +17,7 @@ class CeesResponse:
   """
   def __init__(self):
     self.STATUS_CODES = {0:'OK', 1:'NOK'}
-    self.ROOT_CAUSE_CODES = {0:'SUCCESS', 1:'INVALID_INPUT', 2:'AUTHENTICATION_FAILURE', 3:'INTERNAL_ERROR'}
+    self.ROOT_CAUSE_CODES = {0 :'SUCCESS', 1 : 'INVALID_INPUT', 2 : 'AUTHENTICATION_FAILURE', 3 : 'INTERNAL_ERROR', 4 : 'NOT_FOUND'}
 
   def getCeesResponse(self, statusCode, rootCauseCode, data):
     """
