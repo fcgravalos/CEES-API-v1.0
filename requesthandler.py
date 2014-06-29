@@ -168,7 +168,7 @@ def getArrivalsInfo(request):
     return (status, '')
   store = cdbw.getStoreFromCheckIn(token)
   if store == c.DB_ERROR:
-    applogger(lm.DB_ERROR)
+    applogger.info(lm.DB_ERROR)
     return (c.INTERNAL_SERVER_ERROR, '')
   clients = cdbw.getAwaitingClients(store)
   if clients == c.OBJECT_NOT_FOUND:
