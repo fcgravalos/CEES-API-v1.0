@@ -19,7 +19,7 @@ environ.setdefault(c.DJANGO_SETTINGS, c.CEES_SETTINGS)
 import uuid
 from datetime import datetime
 from django.db import Error
-from cees.models import ShopAssistants, Tokens, Devices, Stores, SaRegistrations, CheckIns, Clients, Customers, RfidCards, ClientArrivals
+from cees.models import ShopAssistants, Tokens, Devices, Stores, SaRegistrations, CheckIns, Clients, Customers, RfidCards, ClientArrivals, Licenses
 from ceesloggers import getDbLogger 
 from cees.serializers import ClientSerializer
 
