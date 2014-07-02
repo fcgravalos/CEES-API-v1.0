@@ -162,7 +162,7 @@ class GCMRegistrationView(APIView):
       return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
     elif response == c.INTERNAL_SERVER_ERROR:
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return Response(cr.CeesResponse().getCeesResponse(0, 0, str(projectId), status = status.HTTP_200_OK)
+    return Response(cr.CeesResponse().getCeesResponse(0, 0, str(projectId)), status = status.HTTP_200_OK)
 
   def post(self, request):
     """
