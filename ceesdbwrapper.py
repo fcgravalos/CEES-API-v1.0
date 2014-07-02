@@ -288,9 +288,20 @@ def getClient(id):
     dblogger.exception(dbe)
   return DB_ERRORS[2]
 
-############################
-# Functions related to GCM #
-############################
+###################################################
+# Functions related to Device registration un GCM #
+###################################################
+
+def getDeviceByMacAddress(mac_address):
+  """
+  Returns a device given its MAC address.
+  If the device does not exist returns OBJECT_NOT_FOUND, otherwise DB_ERROR.
+  """
+  try:
+    return Devices.objects.get(mac_address = mac_address)
+  except (Devices.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[1] if type(dbe) == Devices.DoesNotExist else DB_ERRORS[2]
 
 def saveRegistration(device, regId):
   """
@@ -327,6 +338,19 @@ def deleteRegistrationId(reg_id):
   """
   try:
     SaRegistrations.objects.filter(registration_id = reg_id).delete()
+    return DB_ERRORS[0]
   except (SaRegistrations, Error) as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == SaRegistrations.DoesNotExist else DB_ERRORS[2]
+
+def getProjectIdByLicenseKey(license_key):
+  """
+  This function will return the project linked to a license.
+  Returns OBJECT_NOT_FOUND if the license_key was not found and DB_ERROR otherwise.
+  """
+  try:
+    project = Licenses.objects.get(license_key = license_key).project
+    return project.id
+  except (Licenses.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[1] if type(dbe) == Licenses.DoesNotExist else DB_ERRORS[2]

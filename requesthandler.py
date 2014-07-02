@@ -216,27 +216,47 @@ def newArrival(request):
     return c.CREATED
   return c.BAD_REQUEST # Validation Error. Returns HTTP 400.
 
-##################################################################
-# Functions related to GCM: getProject, updateRegId, deleteRegId #
-##################################################################
+####################################################################
+# Functions related to GCM: getProjectId, updateRegId, deleteRegId #
+####################################################################
+
+def getProjectId(request):
+  """
+  Returns the project linked to a given license.
+  If the license_key is not found will return a 401, otherwise 500.
+  """
+  license_key = request.QUERY_PARAMS.get('arg0')
+  projectId = cdbw.getProjectIdByLicenseKey(license_key);
+  if projectId == c.OBJECT_NOT_FOUND:
+    return (c.UNAUTHORIZED,'') #License not found
+  elif projectId == c.DB_ERROR:
+    return (c.INTERNAL_SERVER_ERROR, '')
+  return (c.OK, projectId)
+
 
 def saveRegId(request):
   """
   Creates a new registration entry in cees database.
   """
-  (status, token) = getToken(request) # Check the token in the Authentication header.
-  if status != c.OK:
-    return status
-  device = cdbw.getDevice(token.id)
-  if device == c.DB_ERROR:
-    return c.INTERNAL_SERVER_ERROR
-  data = request.DATA
-  regId = data.get('registrationID')
-  response = cdbw.saveRegistration(device, regId)
-  if response == c.DB_ERROR:
-    return c.INTERNAL_SERVER_ERROR
-  return c.OK
-
+  data = request.DATA;
+  validationResult = cv.CeesValidator().validate(data, c.GCM_REGISTRATION_SCHEMA_PATH)
+  if validationResult == c.VALID_SUCC: # Validation successful. Extracting data.
+    macAddress = data.get('macAddress')
+    regId = data.get('registrationID')
+    device = cdbw.getDeviceByMacAddress('macAddress')
+    if device == c.DB_ERROR:
+      applogger.error(lm.DB_ERROR)
+      return c.INTERNAL_SERVER_ERROR
+    elif device == c.OBJECT_NOT_FOUND:
+      applogger.warning(lm.UNKNOWN_DEVICE)
+      return c.UNAUTHORIZED
+    response = cdbw.saveRegistration(device, regId)
+    if response == c.DB_ERROR:
+      applogger.error(lm.DB_ERROR)
+      return c.INTERNAL_SERVER_ERROR
+    return c.OK
+  return c.BAD_REQUEST
+  
 def updateRegId(request):
   """
   Updates the registration Id linked to a device.
