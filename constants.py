@@ -32,7 +32,7 @@ INTERNAL_SERVER_ERROR = 500
 LOGIN_SCHEMA_PATH = 'schemas/loginschema.json'
 CHECKIN_SCHEMA_PATH = 'schemas/checkinschema.json'
 DETECTION_SCHEMA_PATH = 'schemas/detectionschema.json'
-CLIENT_INFO_SCHEMA_PATH = 'schemas/clientinfoschema.json'
+GCM_REGISTRATION_SCHEMA_PATH = 'schemas/gcmregistrationschema.json'
 
 ########################
 # SCHEMAS FILTERING KEYS
