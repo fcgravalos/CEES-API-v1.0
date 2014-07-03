@@ -239,7 +239,7 @@ def saveRegId(request):
   Creates a new registration entry in cees database.
   """
   data = request.DATA;
-  validationResult = cv.CeesValidator().validate(data, c.GCM_REGISTRATION_SCHEMA_PATH)
+  validationResult = cv.CeesValidator().validate(data, c.GCM)
   if validationResult == c.VALID_SUCC: # Validation successful. Extracting data.
     macAddress = data.get('macAddress')
     regId = data.get('registrationID')
