@@ -308,7 +308,7 @@ def saveRegistration(device, regId):
   Links a registration id retrieved from Google
   """
   try:
-    SaRegistrations(id = regId, device = device, creation_date = str(datetime.now()), update_date = str(datetime.now())).save()
+    SaRegistrations(registration_id = regId, device = device, creation_date = str(datetime.now()), update_date = str(datetime.now())).save()
     return DB_ERRORS[0]
   except Error as dbe:
     dblogger.exception(dbe)
