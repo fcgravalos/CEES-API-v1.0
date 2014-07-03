@@ -243,7 +243,7 @@ def saveRegId(request):
   if validationResult == c.VALID_SUCC: # Validation successful. Extracting data.
     macAddress = data.get('macAddress')
     regId = data.get('registrationID')
-    device = cdbw.getDeviceByMacAddress('macAddress')
+    device = cdbw.getDeviceByMacAddress(macAddress)
     if device == c.DB_ERROR:
       applogger.error(lm.DB_ERROR)
       return c.INTERNAL_SERVER_ERROR

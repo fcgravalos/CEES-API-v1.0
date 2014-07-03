@@ -292,13 +292,13 @@ def getClient(id):
 # Functions related to Device registration un GCM #
 ###################################################
 
-def getDeviceByMacAddress(mac_address):
+def getDeviceByMacAddress(macAddress):
   """
   Returns a device given its MAC address.
   If the device does not exist returns OBJECT_NOT_FOUND, otherwise DB_ERROR.
   """
   try:
-    return Devices.objects.get(mac_address = mac_address)
+    return Devices.objects.get(mac_address = macAddress)
   except (Devices.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == Devices.DoesNotExist else DB_ERRORS[2]
