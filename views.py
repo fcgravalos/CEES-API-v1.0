@@ -149,9 +149,21 @@ class ArrivalView(APIView):
 
 
 class GCMRegistrationView(APIView):
+
   """
   This class encapsulates gcm registration and unregistration mechanisms
   """
+  def get(self, request):
+    """
+    Gives back the projectId from a given license.
+    """
+    (response, projectId) = rh.getProjectId(request) ;
+    if response == c.UNAUTHORIZED:
+      return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
+    elif response == c.INTERNAL_SERVER_ERROR:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return Response(cr.CeesResponse().getCeesResponse(0, 0, str(projectId)), status = status.HTTP_200_OK)
+
   def post(self, request):
     """
     Creates a new registration in database.
@@ -165,8 +177,7 @@ class GCMRegistrationView(APIView):
       return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
     elif response ==  c.INTERNAL_SERVER_ERROR:
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
-    else:
-      return Response(cr.CeesResponse().getCeesResponse(0, 0, ''), status = status.HTTP_201_CREATED)
+    return Response(cr.CeesResponse().getCeesResponse(0, 0, ''), status = status.HTTP_201_CREATED)
 
   def put(self, request):
     """
@@ -183,7 +194,6 @@ class GCMRegistrationView(APIView):
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
       return Response(cr.CeesResponse().getCeesResponse(0, 0, ''), status = status.HTTP_201_CREATED)
-
 
 
 

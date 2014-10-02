@@ -20,7 +20,8 @@ class CeesValidator:
     self.CHECKIN_SCHEMA = path.abspath(c.CHECKIN_SCHEMA_PATH)
     self.DETECTION_SCHEMA = path.abspath(c.DETECTION_SCHEMA_PATH)
     self.CLIENT_INFO_SCHEMA = path.abspath(c.CLIENT_INFO_SCHEMA_PATH)
-    self.SCHEMA_CODES = {c.LOGIN : self.LOGIN_SCHEMA, c.CHECKIN : self.CHECKIN_SCHEMA, c.DETECT : self.DETECTION_SCHEMA, c.CLIENT : self.CLIENT_INFO_SCHEMA}
+    self.GCM_REG_SCHEMA = path.abspath(c.GCM_REGISTRATION_SCHEMA_PATH)
+    self.SCHEMA_CODES = {c.LOGIN : self.LOGIN_SCHEMA, c.CHECKIN : self.CHECKIN_SCHEMA, c.DETECT : self.DETECTION_SCHEMA, c.CLIENT : self.CLIENT_INFO_SCHEMA, c.GCM : self.GCM_REG_SCHEMA}
     self.VALIDATION_ERRORS = {0 : c.VALID_SUCC, 1 : c.IOERR, 2 : c.VALID_ERR}
     self.applogger = getCeesAppLogger()
 

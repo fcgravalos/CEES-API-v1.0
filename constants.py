@@ -33,6 +33,7 @@ LOGIN_SCHEMA_PATH = 'schemas/loginschema.json'
 CHECKIN_SCHEMA_PATH = 'schemas/checkinschema.json'
 DETECTION_SCHEMA_PATH = 'schemas/detectionschema.json'
 CLIENT_INFO_SCHEMA_PATH = 'schemas/clientinfoschema.json'
+GCM_REGISTRATION_SCHEMA_PATH = 'schemas/gcmregistrationschema.json'
 
 ########################
 # SCHEMAS FILTERING KEYS
@@ -41,7 +42,7 @@ LOGIN = 'LOGIN'
 CHECKIN = 'CHECKIN'
 DETECT = 'DETECTION'
 CLIENT = 'CLIENT_INFO'
-
+GCM = 'GCM_REG'
 #######################
 # VALIDATION ERROR KEYS
 #######################

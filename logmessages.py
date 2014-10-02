@@ -26,5 +26,6 @@ SENDING_NOTIFICATION = 'Sending push notification.'
 ## TOKEN ##
 MISSING_TOKEN = 'There is no Authentication header in request.'
 
-## GCM ##
+## GCM AND DEVICE REGISTRATION##
+UNKNOWN_DEVICE = 'Device not found in databse.'
 REGISTRATION_NOT_FOUND = 'Registration not found in database.'
