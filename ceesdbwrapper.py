@@ -277,6 +277,22 @@ def getAwaitingClients(store):
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == CheckIns.DoesNotExist else DB_ERRORS[2]
 
+def updateClientStatus(client_id, status):
+  """
+  Updates the arrival status.
+  Returns SUCC_QUERY in case of a successful updating, 
+  OBJECT_NOT_FOUND if the registration was not found and DB_ERROR otherwise.
+  """
+  try:
+    client_arrival = ClientArrivals.objects.get(client_id = client_id)
+    client_arrival.status = status
+    client_arrival.save(update_fields = ['client_id'])
+    return DB_ERRORS[0]
+  except (ClientArrivals.DoesNotExist, Error) as dbe:
+    dblogger.exception(dbe)
+    return DB_ERRORS[1] if type(dbe) == ClientArrivals.DoesNotExist else DB_ERRORS[2]
+
+
 def getClient(id):
   """
   Returns the client given its id. 
@@ -326,7 +342,7 @@ def updateRegistrationId(reg_id, new_reg_id):
     sa_re.update_date = str(datetime.now())
     sa_re.save(update_fields = ['registration_id', 'update_date'])
     return DB_ERRORS[0]
-  except (SaRegistrations, Error) as dbe:
+  except (SaRegistrations.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == SaRegistrations.DoesNotExist else DB_ERRORS[2]  
   

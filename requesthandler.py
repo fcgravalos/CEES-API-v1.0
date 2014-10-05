@@ -216,6 +216,22 @@ def newArrival(request):
     return c.CREATED
   return c.BAD_REQUEST # Validation Error. Returns HTTP 400.
 
+def updateArrivalStatus(request):
+  (status, token) = getToken(request) # Check the token in the Authentication header.
+  if status != c.OK:
+    return status
+  data = request.DATA
+  clientId = data.get('client_id')
+  result = cdbw.updateClientStatus(clientId, c.BEING_ATTENDED)
+  if result == c.OBJECT_NOT_FOUND:
+    applogger.warning(lm.CLIENT_NOT_FOUND)
+    return c.NOT_FOUND
+  elif result == c.DB_ERROR:
+    applogger.error(lm.DB_ERROR)
+    return c.INTERNAL_SERVER_ERROR
+  return c.OK
+
+
 ####################################################################
 # Functions related to GCM: getProjectId, updateRegId, deleteRegId #
 ####################################################################

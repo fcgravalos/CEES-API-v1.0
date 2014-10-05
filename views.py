@@ -147,6 +147,22 @@ class ArrivalView(APIView):
       return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
     return Response(cr.CeesResponse().getCeesResponse(0 , 0, ''), status = status.HTTP_201_CREATED)
 
+  def put(self, request):
+    """
+    Updates arrival status
+    """
+    response = rh.updateClientStatus(request)
+    if response == c.UNAUTHORIZED:
+      return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
+    elif response == c.BAD_REQUEST:
+      return Response(cr.CeesResponse().getCeesResponse(1, 1, ''), status = status.HTTP_400_BAD_REQUEST) # Validation Error. Returns HTTP 400.
+    elif response == c.NOT_FOUND:
+      return Response(cr.CeesResponse().getCeesResponse(1, 4, ''), status = status.HTTP_404_NOT_FOUND)
+    elif response ==  c.INTERNAL_SERVER_ERROR:
+      return Response(cr.CeesResponse().getCeesResponse(1 , 3, ''), status = status.HTTP_500_INTERNAL_SERVER_ERROR)
+    else:
+      return Response(cr.CeesResponse().getCeesResponse(0, 0, ''), status = status.HTTP_201_CREATED)
+
 
 class GCMRegistrationView(APIView):
 
