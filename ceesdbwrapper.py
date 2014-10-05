@@ -286,7 +286,7 @@ def updateArrivalStatus(client_id, status):
   try:
     client_arrival = ClientArrivals.objects.get(client_id = client_id)
     client_arrival.status = status
-    client_arrival.save(update_fields = ['client_id'])
+    client_arrival.save(update_fields = ['status'])
     return DB_ERRORS[0]
   except (ClientArrivals.DoesNotExist, Error) as dbe:
     dblogger.exception(dbe)
