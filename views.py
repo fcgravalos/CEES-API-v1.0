@@ -151,7 +151,7 @@ class ArrivalView(APIView):
     """
     Updates arrival status
     """
-    response = rh.updateClientStatus(request)
+    response = rh.updateArrivalStatus(request)
     if response == c.UNAUTHORIZED:
       return Response(cr.CeesResponse().getCeesResponse(1, 2, ''), status = status.HTTP_401_UNAUTHORIZED)
     elif response == c.BAD_REQUEST:

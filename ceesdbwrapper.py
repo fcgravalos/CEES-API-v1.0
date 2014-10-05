@@ -277,7 +277,7 @@ def getAwaitingClients(store):
     dblogger.exception(dbe)
     return DB_ERRORS[1] if type(dbe) == CheckIns.DoesNotExist else DB_ERRORS[2]
 
-def updateClientStatus(client_id, status):
+def updateArrivalStatus(client_id, status):
   """
   Updates the arrival status.
   Returns SUCC_QUERY in case of a successful updating, 

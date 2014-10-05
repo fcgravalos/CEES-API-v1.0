@@ -222,7 +222,7 @@ def updateArrivalStatus(request):
     return status
   data = request.DATA
   clientId = data.get('client_id')
-  result = cdbw.updateClientStatus(clientId, c.BEING_ATTENDED)
+  result = cdbw.updateArrivalStatus(clientId, c.BEING_ATTENDED)
   if result == c.OBJECT_NOT_FOUND:
     applogger.warning(lm.CLIENT_NOT_FOUND)
     return c.NOT_FOUND
